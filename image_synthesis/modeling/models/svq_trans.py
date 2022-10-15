@@ -201,12 +201,12 @@ class Block(nn.Module):
             nn.Dropout(dropout),
             nn.Linear(mlp_hidden_times * n_embed, n_embed)
         ])
-        if dim_mem is None or dim_mem == n_embed:
-            self.proj1 = nn.Identity()
-            self.proj2 = nn.Identity()
-        else:
-            self.proj1 = nn.Linear(n_embed, dim_mem)
-            self.proj2 = nn.Linear(dim_mem, n_embed)
+        # if dim_mem is None or dim_mem == n_embed:
+        #     self.proj1 = nn.Identity()
+        #     self.proj2 = nn.Identity()
+        # else:
+        #     self.proj1 = nn.Linear(n_embed, dim_mem)
+        #     self.proj2 = nn.Linear(dim_mem, n_embed)
         self.norm1 = nn.LayerNorm(n_embed)
         self.norm2 = nn.LayerNorm(n_embed)
         self.norm3 = nn.LayerNorm(n_embed)
@@ -219,18 +219,18 @@ class Block(nn.Module):
                 mem,
                 mask=None,
                 return_attn_weight=True):
-        x, _ = self.self_attn(query=tgt, key=tgt, value=tgt, key_padding_mask=mask)
-        x = x + self.dropout1(x)
+        x_, _ = self.self_attn(query=tgt, key=tgt, value=tgt, key_padding_mask=mask)
+        x = x + self.dropout1(x_)
         x = self.norm1(x)
 
-        x = self.proj1(x)
-        x, attn_weight = self.multi_attn(query=x, key=mem, value=mem)
-        x = x + self.dropout2(x)
+        # x = self.proj1(x)
+        x_, attn_weight = self.multi_attn(query=x, key=mem, value=mem)
+        x = x + self.dropout2(x_)
         x = self.norm2(x)
 
-        x = self.proj2(x)
-        x = self.mlp(x)
-        x = x + self.dropout3(x)
+        # x = self.proj2(x)
+        x_ = self.mlp(x)
+        x = x + self.dropout3(x_)
         x = self.norm3(x)
 
         out = {'feat': x}
