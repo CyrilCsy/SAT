@@ -219,18 +219,18 @@ class Block(nn.Module):
                 mem,
                 mask=None,
                 return_attn_weight=True):
-        x, _ = self.self_attn(query=tgt, key=tgt, value=tgt, key_padding_mask=mask)
-        x = x + self.dropout1(x)
+        x_, _ = self.self_attn(query=tgt, key=tgt, value=tgt, key_padding_mask=mask)
+        x = x + self.dropout1(x_)
         x = self.norm1(x)
 
         # x = self.proj1(x)
-        x, attn_weight = self.multi_attn(query=x, key=mem, value=mem)
-        x = x + self.dropout2(x)
+        x_, attn_weight = self.multi_attn(query=x, key=mem, value=mem)
+        x = x + self.dropout2(x_)
         x = self.norm2(x)
 
         # x = self.proj2(x)
-        x = self.mlp(x)
-        x = x + self.dropout3(x)
+        x_ = self.mlp(x)
+        x = x + self.dropout3(x_)
         x = self.norm3(x)
 
         out = {'feat': x}
