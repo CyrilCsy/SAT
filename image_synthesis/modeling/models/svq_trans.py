@@ -219,6 +219,7 @@ class Block(nn.Module):
                 mem,
                 mask=None,
                 return_attn_weight=True):
+        x = tgt
         x_, _ = self.self_attn(query=tgt, key=tgt, value=tgt, key_padding_mask=mask)
         x = x + self.dropout1(x_)
         x = self.norm1(x)
