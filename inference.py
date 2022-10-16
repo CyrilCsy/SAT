@@ -60,10 +60,10 @@ def get_model_and_dataset(args=None, model_name='2020-11-09T13-33-36_faceshq_vqg
         # import pdb; pdb.set_trace()
         if model_name.endswith(('.pth', '.ckpt')):
             model_path = model_name
-            config_path = os.path.join(os.path.dirname(model_name), '..', 'configs', 'config.yaml')
+            config_path = os.path.join(os.path.dirname(model_name), '', 'configs', 'config.yaml')
         elif model_name.endswith('.yaml'):
             config_path = model_name
-            model_path = os.path.join(os.path.dirname(model_name), '..', 'checkpoint', 'last.pth')
+            model_path = os.path.join(os.path.dirname(model_name), '', 'checkpoint', 'last.pth')
         else:
             raise RuntimeError(model_name)
         
