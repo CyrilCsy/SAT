@@ -461,7 +461,22 @@ class VectorQuantizer(nn.Module):
 
         return output
 
-    def get_codebook_entry(self, indices, shape):
+    @torch.no_grad()
+    def get_selector(self, z):
+        d = self.get_distance(z)
+        self.update_semantic_label()
+        d_from_center = d[:, :self.n_cluster]
+        self.alpha.data = torch.clamp(self.alpha, 0, 1)
+        sem_cls = self.semantic_classifier(z)
+        sem_cls = sem_cls / torch.norm(sem_cls, p=2, dim=-1, keepdim=True)
+        d_from_center = self.alpha * sem_cls - (1 - self.alpha) * d_from_center.detach()
+        likelihood = F.gumbel_softmax(d_from_center, dim=1, tau=0.5, hard=False)  # P(z|k)
+        embed_semantic_label = F.one_hot(self.semantic_label).to(torch.float32)  # P(k)
+        token_semantic_type = likelihood * torch.mean(embed_semantic_label, dim=0)  # P(k|z)
+        selector = token_semantic_type @ embed_semantic_label.t()
+        return selector
+
+def get_codebook_entry(self, indices, shape):
         # import pdb; pdb.set_trace()
 
         # shape specifying (batch, height, width)
@@ -1082,6 +1097,10 @@ class PatchVQGAN(BaseCodec):
 
     def get_number_of_tokens(self):
         return self.quantize.n_e
+
+    @torch.no_grad()
+    def get_selector(self, feat):
+        return self.quantize.get_selector(feat)
 
     @torch.no_grad()
     def get_features(self, data, mask=None,

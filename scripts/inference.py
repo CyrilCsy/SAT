@@ -477,20 +477,14 @@ def inference_complet_sample_in_feature_for_diversity(local_rank=0, args=None):
                         if isinstance(model, torch.nn.parallel.DistributedDataParallel):
                             content_dict = model.module.generate_content(
                                 batch=data_i,
-                                filter_ratio=fr,
-                                filter_type=filter_type,
+                                sample_type = 'largest' if sample_largest else fr,
                                 replicate=args.batch_size,
-                                with_process_bar=True,
-                                sample_largest=sample_largest,
                             ) # B x C x H x W
                         else:
                             content_dict = model.generate_content(
                                 batch=data_i,
-                                filter_ratio=fr,
-                                filter_type=filter_type,
+                                sample_type='largest' if sample_largest else fr,
                                 replicate=args.batch_size,
-                                with_process_bar=True,
-                                sample_largest=sample_largest
                             ) # B x C x H x W
                     # save results
                     for k in content_dict.keys():
@@ -655,24 +649,14 @@ def inference_complet_sample_in_feature_for_evaluation(local_rank=0, args=None):
                     if isinstance(model, torch.nn.parallel.DistributedDataParallel):
                         content_dict = model.module.generate_content(
                             batch=data_i,
-                            filter_ratio=fr,
-                            filter_type=filter_type,
+                            sample_type='largest' if sample_largest else fr,
                             replicate=args.batch_size,
-                            with_process_bar=True,
-                            sample_largest=sample_largest,
-                            return_reconstruction=save_reconstruction,
-                            num_token_per_iter=num_token_per_iter
                         ) # B x C x H x W
                     else:
                         content_dict = model.generate_content(
                             batch=data_i,
-                            filter_ratio=fr,
-                            filter_type=filter_type,
+                            sample_type='largest' if sample_largest else fr,
                             replicate=args.batch_size,
-                            with_process_bar=True,
-                            sample_largest=sample_largest,
-                            return_reconstruction=save_reconstruction,
-                            num_token_per_iter=num_token_per_iter
                         ) # B x C x H x W
                 # save results
                 for k in ['completed']:

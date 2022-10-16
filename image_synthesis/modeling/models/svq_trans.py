@@ -876,6 +876,7 @@ class SemanticAwareTransformer(nn.Module):
         self.content_codec = instantiate_from_config(content_codec_config)
         self.codebook = self.content_codec.get_codebook()
         self.encoder = self.content_codec.get_encoder() if encoder_config is None else self.encoder
+        self.n_e = self.content_codec.get_number_of_tokens()
 
         self.im_process_info = im_process_info
         for k, v in self.im_process_info.items():
@@ -893,72 +894,29 @@ class SemanticAwareTransformer(nn.Module):
             module.bias.data.zero_()
             module.weight.data.fill_(1.0)
 
-    # def parameters(self, recurse=True, name=None):
-    #     # return super().parameters(recurse=True)
-    #     if name is None or name == 'none':
-    #         return super().parameters(recurse=recurse)
-    #     else:
-    #         # separate out all parameters to those that will and won't experience regularizing weight decay
-    #         print("GPTLikeTransformer: get parameters by the overwrite method!")
-    #         decay = set()
-    #         no_decay = set()
-    #         whitelist_weight_modules = (torch.nn.Linear, torch.nn.Conv2d, torch.nn.MultiheadAttention, torch.nn.ReflectionPad2d, torch.nn.ConvTranspose2d)  # TODO(torch.nn.Linear, )
-    #         blacklist_weight_modules = (torch.nn.LayerNorm, torch.nn.Embedding)
-    #         for mn, m in self.named_modules():
-    #             for pn, p in m.named_parameters():
-    #                 if not p.requires_grad:
-    #                     print(m)
-    #                     continue
-    #
-    #                 fpn = '%s.%s' % (mn, pn) if mn else pn  # full param name
-    #
-    #                 if pn.endswith('bias'):
-    #                     # all biases will not be decayed
-    #                     no_decay.add(fpn)
-    #                 elif pn.endswith('weight') and isinstance(m, whitelist_weight_modules):
-    #                     # weights of whitelist modules will be weight decayed
-    #                     decay.add(fpn)
-    #                 elif pn.endswith('weight') and isinstance(m, blacklist_weight_modules):
-    #                     # weights of blacklist modules will NOT be weight decayed
-    #                     no_decay.add(fpn)
-    #                 else:
-    #                     decay.add(fpn)
-    #
-    #         no_decay.add('pos_emb')
-    #
-    #         # validate that we considered every parameter
-    #         param_dict = {pn: p for pn, p in self.named_parameters() if p.requires_grad}
-    #         inter_params = decay & no_decay
-    #         union_params = decay | no_decay
-    #         assert len(inter_params) == 0, "parameters %s made it into both decay/no_decay sets!" % (str(inter_params),)
-    #         assert len(
-    #             param_dict.keys() - union_params) == 0, "parameters %s were not separated into either decay/no_decay set!" \
-    #                                                     % (str(param_dict.keys() - union_params),)
-    #
-    #         # create the pytorch optimizer object
-    #         optim_groups = [
-    #             {"params": [param_dict[pn] for pn in sorted(list(decay))], "weight_decay": self.weight_decay},
-    #             {"params": [param_dict[pn] for pn in sorted(list(no_decay))], "weight_decay": 0.0},
-    #         ]
-    #         return optim_groups
+    @torch.no_grad()
+    def generate_content(
+            self,
+            batch,
+            sample_type='all',
+            replicate=1
+    ):
+        self.eval()
+        if replicate != 1:
+            for k in batch.keys():
+                if batch[k] is not None and torch.is_tensor(batch[k]):
+                    batch[k] = torch.cat([batch[k] for _ in range(replicate)], dim=0)
+        return self.sample(batch=batch, sample_type=sample_type)
 
     @torch.no_grad()
     def sample(  # sample_raster
             self,
             *,
             batch,
-            filter_ratio=0.8,
-            filter_type='count',
-            temperature=1.0,
-            only_masked=True,
-            with_process_bar=False,
-            return_gt=True,
-            return_mask_gt=True,
-            return_reconstruction=True,
-            mask_low_to_high=False,
-            num_token_per_iter=1,
-            **kwargs,
+            sample_type='all',
     ):
+        self.eval()
+
         img = self.pre_process(batch['image'])
         mask = batch['mask']
         inp = self.multi_pixels_with_mask(img, mask)
@@ -966,7 +924,21 @@ class SemanticAwareTransformer(nn.Module):
 
         b, c, h, w = x.shape
         tgt = x.reshape(b, c, h * w).permute(2, 0, 1).contiguous()
-        mem = self.codebook['default']['code'].unsqueeze(dim=1).repeat(1, b, 1).to(tgt.device)
+        if sample_type == 'all':
+            mem = self.codebook['default']['code'].unsqueeze(dim=1).repeat(1, b, 1).to(tgt.device)
+        elif sample_type == 'prob':
+            prob = self.content_codec.get_selector(tgt)
+            mem_token = torch.multinomial(prob, 1).view(b, -1)
+            mem = self.content_codec.get_codebook_entry_with_token(mem_token)['feature']
+            mem = mem.permute(1, 0, 2).contiguous()
+        elif sample_type == 'largest' or int(sample_type) == 1:
+            mem_token = self.content_codec.get_tokens_with_feature(tgt, topk=1).view(b, -1)
+            mem = self.content_codec.get_codebook_entry_with_token(mem_token)['feature']
+            mem = mem.permute(1, 0, 2).contiguous()
+        else:
+            mem_token = self.content_codec.get_tokens_with_feature(tgt, topk=int(sample_type)).view(b, -1)
+            mem = self.content_codec.get_codebook_entry_with_token(mem_token)['feature']
+            mem = mem.permute(1, 0, 2).contiguous()
         mask_ = F.interpolate(mask.to(img), size=(h, w), mode='nearest')
         mask_ = mask_.reshape(b, 1, h * w).squeeze().to(mask).to(tgt.device)
         print(self.blocks.parameters())
@@ -979,7 +951,7 @@ class SemanticAwareTransformer(nn.Module):
         rec = self.post_process(rec)
 
         out = {'gt': batch['image'], 'input': self.post_process(inp),
-               'reconstruction': rec, 'reference_mask': mask * 255}
+               'completed': rec, 'reference_mask': mask * 255}
         return out
 
     def parameters(self, recurse=True, name=None):
