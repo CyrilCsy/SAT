@@ -71,6 +71,7 @@ class ImageListDataset(Dataset):
             data_root = 'data'
         self.data_root = data_root
         root = os.path.join(data_root, self.name)
+
         image_list = os.path.join(data_root, self.image_list_file)
         if os.path.isfile(image_list):
             with open(image_list, "r") as f:
