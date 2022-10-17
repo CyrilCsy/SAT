@@ -17,7 +17,7 @@ from PIL import Image
 from collections import OrderedDict, defaultdict
 from torch.utils.data import ConcatDataset, dataset
 
-from image_synthesis.utils.io import load_yaml_config, load_dict_from_json, save_dict_to_json
+from image_synthesis import load_yaml_config, load_dict_from_json, save_dict_to_json
 from image_synthesis.utils.misc import get_all_file, get_all_subdir, instantiate_from_config
 from image_synthesis.utils.cal_metrics import get_PSNR, get_mse_loss, get_l1_loss, get_SSIM, get_mae
 from image_synthesis.modeling.build import build_model
@@ -60,7 +60,7 @@ def get_model_and_dataset(args=None, model_name='2020-11-09T13-33-36_faceshq_vqg
         # import pdb; pdb.set_trace()
         if model_name.endswith(('.pth', '.ckpt')):
             model_path = model_name
-            config_path = os.path.join(os.path.dirname(model_name), '', '../configs', 'config.yaml')
+            config_path = os.path.join(os.path.dirname(model_name), '', 'configs', 'config.yaml')
         elif model_name.endswith('.yaml'):
             config_path = model_name
             model_path = os.path.join(os.path.dirname(model_name), '', 'checkpoint', 'last.pth')
@@ -72,8 +72,8 @@ def get_model_and_dataset(args=None, model_name='2020-11-09T13-33-36_faceshq_vqg
         else: # just give a config file, such as test_openai_dvae.yaml, which is no need to train, just test
             model_name = os.path.basename(config_path).replace('.yaml', '')
     else:
-        model_path = os.path.join('../OUTPUT', model_name, 'checkpoint', 'last.pth')
-        config_path = os.path.join('../OUTPUT', model_name, 'configs', 'config.yaml')
+        model_path = os.path.join('OUTPUT', model_name, 'checkpoint', 'last.pth')
+        config_path = os.path.join('OUTPUT', model_name, 'configs', 'config.yaml')
 
     args.model_path = model_path
     args.config_path = config_path
@@ -117,6 +117,7 @@ def get_model_and_dataset(args=None, model_name='2020-11-09T13-33-36_faceshq_vqg
 
     val_dataset = []
     for ds_cfg in config['dataloader'][data_type]:
+        ds_cfg['params']['data_root'] = config['dataloader'].get('data_root', '')
         ds = instantiate_from_config(ds_cfg)
         val_dataset.append(ds)
     if len(val_dataset) > 1:
@@ -324,10 +325,10 @@ def inference_complet_sample_in_feature_for_diversity(local_rank=0, args=None):
 
     count_cond = -1 #1000 // (args.world_size if args is not None else 1)
     count_per_cond = 10
-    filter_ratio = [50]
+    filter_ratio = [50, 'prob']
 
     filter_type = 'count'
-    sample_largest = True 
+    sample_largest = False
     save_gt = True 
     save_mask = True
     save_masked_gt = True
@@ -340,12 +341,17 @@ def inference_complet_sample_in_feature_for_diversity(local_rank=0, args=None):
     else:
         save_root = save_root + '_sample_raster'
 
+    # mask_ratio = [
+    #     ['0.5', '0.6'],
+    #     ['0.4', '0.5'],
+    #     ['0.3', '0.4'],
+    #     ['0.2', '0.3'],
+    #     ['0.1', '0.2'],
+    # ]
     mask_ratio = [
-        ['0.5', '0.6'],
-        ['0.4', '0.5'],
-        ['0.3', '0.4'],
-        ['0.2', '0.3'],
-        ['0.1', '0.2'],
+        ['0.4', '0.6'],
+        ['0.2', '0.4'],
+        ['0.1', '0.6'],
     ]
 
     for mr in mask_ratio:
@@ -661,6 +667,7 @@ def inference_complet_sample_in_feature_for_evaluation(local_rank=0, args=None):
                 # save results
                 for k in ['completed']:
                     # get all losses
+                    data_i['image'] = data_i['image'].to(content_dict[k].device)
                     l1 = get_l1_loss(data_i['image'], content_dict[k])
                     mse = get_mse_loss(data_i['image'], content_dict[k])
                     mae = get_mae(data_i['image'], content_dict[k])

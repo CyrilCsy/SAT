@@ -932,16 +932,15 @@ class SemanticAwareTransformer(nn.Module):
             mem = self.content_codec.get_codebook_entry_with_token(mem_token)['feature']
             mem = mem.permute(1, 0, 2).contiguous()
         elif sample_type == 'largest' or int(sample_type) == 1:
-            mem_token = self.content_codec.get_tokens_with_feature(tgt, topk=1).view(b, -1)
+            mem_token = self.content_codec.get_tokens_with_feature(x, topk=1).view(b, -1)
             mem = self.content_codec.get_codebook_entry_with_token(mem_token)['feature']
             mem = mem.permute(1, 0, 2).contiguous()
         else:
-            mem_token = self.content_codec.get_tokens_with_feature(tgt, topk=int(sample_type)).view(b, -1)
+            mem_token = self.content_codec.get_tokens_with_feature(x, topk=int(sample_type)).view(b, -1)
             mem = self.content_codec.get_codebook_entry_with_token(mem_token)['feature']
             mem = mem.permute(1, 0, 2).contiguous()
         mask_ = F.interpolate(mask.to(img), size=(h, w), mode='nearest')
-        mask_ = mask_.reshape(b, 1, h * w).squeeze().to(mask).to(tgt.device)
-        print(self.blocks.parameters())
+        mask_ = mask_.reshape(b, 1, h * w).squeeze(dim=1).to(mask).to(tgt.device)
         for idx in range(len(self.blocks)):
             out = self.blocks[idx](tgt, mem, mask_)
             tgt = out['feat']
@@ -1020,7 +1019,7 @@ class SemanticAwareTransformer(nn.Module):
             tgt = x.reshape(b, c, h * w).permute(2, 0, 1).contiguous()
             mem = self.codebook['default']['code'].unsqueeze(dim=1).repeat(1, b, 1).to(tgt.device)
             mask_ = F.interpolate(mask.to(img), size=(h, w), mode='nearest')
-            mask_ = mask_.reshape(b, 1, h * w).squeeze().to(mask).to(tgt.device)
+            mask_ = mask_.reshape(b, 1, h * w).squeeze(dim=1).to(mask).to(tgt.device)
             for idx in range(len(self.blocks)):
                 out = self.blocks[idx](tgt, mem, mask_, return_attn_weight)
                 tgt = out['feat']

@@ -410,10 +410,8 @@ class VectorQuantizer(nn.Module):
         # import pdb; pdb.set_trace()
         z = z.permute(0, 2, 3, 1).contiguous()  # B x H x W x C
         z_flattened = z.view(-1, self.e_dim)  # BHW x C
-        if token_type is not None:
-            token_type_flattened = token_type.view(-1)
-        else:
-            token_type_flattened = None
+
+        token_type_flattened = None
 
         z_q, min_encoding_indices, cls_loss, orth_loss, used_cluster = self._quantize(z_flattened,
                                     token_type=token_type_flattened, topk=topk, step=step, total_steps=total_steps)
@@ -476,28 +474,28 @@ class VectorQuantizer(nn.Module):
         selector = token_semantic_type @ embed_semantic_label.t()
         return selector
 
-def get_codebook_entry(self, indices, shape):
-        # import pdb; pdb.set_trace()
+    def get_codebook_entry(self, indices, shape):
+            # import pdb; pdb.set_trace()
 
-        # shape specifying (batch, height, width)
-        if self.get_embed_type == 'matmul':
-            min_encodings = torch.zeros(indices.shape[0], self.n_e).to(indices)
-            min_encodings.scatter_(1, indices[:, None], 1)
-            # get quantized latent vectors
-            z_q = torch.matmul(min_encodings.float(), self.embed_weight)
-        elif self.get_embed_type == 'retrive':
-            z_q = F.embedding(indices, self.embed_weight)
-        else:
-            raise NotImplementedError
+            # shape specifying (batch, height, width)
+            if self.get_embed_type == 'matmul':
+                min_encodings = torch.zeros(indices.shape[0], self.n_e).to(indices)
+                min_encodings.scatter_(1, indices[:, None], 1)
+                # get quantized latent vectors
+                z_q = torch.matmul(min_encodings.float(), self.embed_weight)
+            elif self.get_embed_type == 'retrive':
+                z_q = F.embedding(indices, self.embed_weight)
+            else:
+                raise NotImplementedError
 
-        # import pdb; pdb.set_trace()
-        if shape is not None:
-            z_q = z_q.view(*shape, -1)  # B x H x W x C
+            # import pdb; pdb.set_trace()
+            if shape is not None:
+                z_q = z_q.view(*shape, -1)  # B x H x W x C
 
-            if len(z_q.shape) == 4:
-                # reshape back to match original input shape
-                z_q = z_q.permute(0, 3, 1, 2).contiguous()
-        return z_q
+                if len(z_q.shape) == 4:
+                    # reshape back to match original input shape
+                    z_q = z_q.permute(0, 3, 1, 2).contiguous()
+            return z_q
 
 
 class UpSample(nn.Module):
@@ -1149,8 +1147,8 @@ class PatchVQGAN(BaseCodec):
 
     @torch.no_grad()
     def get_tokens_with_feature(self, feat, token_type=None, topk=1):
-        if token_type is None:
-            token_type = torch.ones((feat.shape[0], 1, feat.shape[2], feat.shape[3])).long().to(self.device)
+        # if token_type is None:
+        #     token_type = torch.ones((feat.shape[0], 1, feat.shape[2], feat.shape[3])).long().to(self.device)
         idx = self.quantize(feat, token_type=token_type, topk=topk)['index']
         return idx
 
