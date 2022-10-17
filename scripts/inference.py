@@ -60,7 +60,7 @@ def get_model_and_dataset(args=None, model_name='2020-11-09T13-33-36_faceshq_vqg
         # import pdb; pdb.set_trace()
         if model_name.endswith(('.pth', '.ckpt')):
             model_path = model_name
-            config_path = os.path.join(os.path.dirname(model_name), '', 'configs', 'config.yaml')
+            config_path = os.path.join(os.path.dirname(model_name), '', '../configs', 'config.yaml')
         elif model_name.endswith('.yaml'):
             config_path = model_name
             model_path = os.path.join(os.path.dirname(model_name), '', 'checkpoint', 'last.pth')
@@ -72,8 +72,8 @@ def get_model_and_dataset(args=None, model_name='2020-11-09T13-33-36_faceshq_vqg
         else: # just give a config file, such as test_openai_dvae.yaml, which is no need to train, just test
             model_name = os.path.basename(config_path).replace('.yaml', '')
     else:
-        model_path = os.path.join('OUTPUT', model_name, 'checkpoint', 'last.pth')
-        config_path = os.path.join('OUTPUT', model_name, 'configs', 'config.yaml')
+        model_path = os.path.join('../OUTPUT', model_name, 'checkpoint', 'last.pth')
+        config_path = os.path.join('../OUTPUT', model_name, 'configs', 'config.yaml')
 
     args.model_path = model_path
     args.config_path = config_path
