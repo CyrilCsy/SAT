@@ -220,12 +220,12 @@ class Block(nn.Module):
                 mask=None,
                 return_attn_weight=True):
         x = tgt
-        x_, _ = self.self_attn(query=x, key=x, value=x, key_padding_mask=mask)
+        x_, attn_weight = self.multi_attn(query=x, key=mem, value=mem)
         x = x + self.dropout1(x_)
         x = self.norm1(x)
 
         # x = self.proj1(x)
-        x_, attn_weight = self.multi_attn(query=x, key=mem, value=mem)
+        x_, _ = self.self_attn(query=x, key=x, value=x, key_padding_mask=mask)
         x = x + self.dropout2(x_)
         x = self.norm2(x)
 
