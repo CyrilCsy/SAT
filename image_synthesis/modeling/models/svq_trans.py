@@ -201,12 +201,6 @@ class Block(nn.Module):
             nn.Dropout(dropout),
             nn.Linear(mlp_hidden_times * n_embed, n_embed)
         ])
-        # if dim_mem is None or dim_mem == n_embed:
-        #     self.proj1 = nn.Identity()
-        #     self.proj2 = nn.Identity()
-        # else:
-        #     self.proj1 = nn.Linear(n_embed, dim_mem)
-        #     self.proj2 = nn.Linear(dim_mem, n_embed)
         self.norm1 = nn.LayerNorm(n_embed)
         self.norm2 = nn.LayerNorm(n_embed)
         self.norm3 = nn.LayerNorm(n_embed)
@@ -944,8 +938,9 @@ class SemanticAwareTransformer(nn.Module):
         for idx in range(len(self.blocks)):
             out = self.blocks[idx](tgt, mem, mask_)
             tgt = out['feat']
-        rec = tgt.permute(1, 2, 0).reshape(b, c, h, w)
 
+        rec = tgt.permute(1, 2, 0).reshape(b, c, h, w)
+        rec = F.relu(rec + x)
         rec = self.decoder(rec)
         rec = self.post_process(rec)
 
@@ -1023,8 +1018,9 @@ class SemanticAwareTransformer(nn.Module):
             for idx in range(len(self.blocks)):
                 out = self.blocks[idx](tgt, mem, mask_, return_attn_weight)
                 tgt = out['feat']
-            rec = tgt.permute(1, 2, 0).reshape(b, c, h, w)
 
+            rec = tgt.permute(1, 2, 0).reshape(b, c, h, w)
+            rec = F.relu(rec + x)
             rec = self.decoder(rec)
 
             self.img_tmp = img
