@@ -940,7 +940,7 @@ class SemanticAwareTransformer(nn.Module):
             tgt = out['feat']
 
         rec = tgt.permute(1, 2, 0).reshape(b, c, h, w)
-        rec = F.relu(rec + x)
+        # rec = F.relu(rec + x)
         rec = self.decoder(rec)
         rec = self.post_process(rec)
 
@@ -1020,7 +1020,7 @@ class SemanticAwareTransformer(nn.Module):
                 tgt = out['feat']
 
             rec = tgt.permute(1, 2, 0).reshape(b, c, h, w)
-            rec = F.relu(rec + x)
+            # rec = F.relu(rec + x)
             rec = self.decoder(rec)
 
             self.img_tmp = img
