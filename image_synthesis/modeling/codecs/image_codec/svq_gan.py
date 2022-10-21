@@ -355,7 +355,9 @@ class VectorQuantizer(nn.Module):
             self.alpha.data = torch.clamp(self.alpha, 0, 1)
             sem_cls = self.semantic_classifier(self.embedding[:self.n_cluster])
             sem_cls = sem_cls / torch.norm(sem_cls, p=2, dim=-1, keepdim=True)
+            b = z.shape[0] / sem_cls.shape[-1]
             sem_cls = sem_cls.expand(-1, -1, b).view(self.n_cluster, -1).permute(1, 0)
+            print(sem_cls.shape, '!!!!!!')
             d_from_center = self.alpha * sem_cls - (1 - self.alpha) * d_from_center.detach()  # L x k
             # method 1
             # token_semantic_type = torch.argmax(d_from_center, dim=1)
