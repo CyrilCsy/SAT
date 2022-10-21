@@ -152,9 +152,9 @@ class VectorQuantizer(nn.Module):
             self.distance_fc = nn.Linear(self.e_dim, self.n_e)
 
         self.semantic_classifier = nn.Sequential(*[
-            nn.Linear(self.e_dim, self.e_dim // 4),
+            nn.Linear(self.e_dim, self.e_dim * 2),
             nn.ReLU(inplace=True),
-            nn.Linear(self.e_dim // 4, self.n_cluster),
+            nn.Linear(self.e_dim * 2, 1024),
             # nn.Softmax(dim=1)
         ])
         self.alpha = nn.Parameter(torch.ones(size=(1, self.n_cluster)) * 0.1, requires_grad=True)
@@ -353,8 +353,9 @@ class VectorQuantizer(nn.Module):
             # method 3
 
             self.alpha.data = torch.clamp(self.alpha, 0, 1)
-            sem_cls = self.semantic_classifier(z)
+            sem_cls = self.semantic_classifier(self.embedding[:self.n_cluster])
             sem_cls = sem_cls / torch.norm(sem_cls, p=2, dim=-1, keepdim=True)
+            sem_cls = sem_cls.expand(-1, -1, b).view(self.n_cluster, -1).permute(1, 0)
             d_from_center = self.alpha * sem_cls - (1 - self.alpha) * d_from_center.detach()  # L x k
             # method 1
             # token_semantic_type = torch.argmax(d_from_center, dim=1)
