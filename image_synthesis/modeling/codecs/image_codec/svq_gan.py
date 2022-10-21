@@ -363,7 +363,7 @@ class VectorQuantizer(nn.Module):
             # method 3
             # token_semantic_type = F.gumbel_softmax(d_from_center, hard=True)
             # method 4
-            likelihood = F.gumbel_softmax(d_from_center, dim=1, tau=0.5, hard=False)    # P(z|k)
+            likelihood = F.gumbel_softmax(d_from_center, dim=0, tau=0.5, hard=False)    # P(z|k)
             embed_semantic_label = F.one_hot(self.semantic_label).to(torch.float32)   # P(k)
             token_semantic_type = likelihood * torch.mean(embed_semantic_label, dim=0)  # P(k|z)
             selector = token_semantic_type @ embed_semantic_label.t()
@@ -1246,7 +1246,7 @@ class PatchVQGAN(BaseCodec):
         else:
             token_type_erase = torch.ones((x.shape[0], 1, x.shape[2], x.shape[3])).long().to(self.device)
 
-        quant = self.quantize(x, token_type=token_type_erase)['quantize']
+        quant = self.quantize(x, token_type=None)['quantize']
         quant = self.post_quant_conv(quant)
         if self.decoder.requires_image:
             mask_im = self.multi_pixels_with_mask(data, batch['mask'])
