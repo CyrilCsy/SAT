@@ -135,8 +135,10 @@ class ImageListDataset(Dataset):
             elif isinstance(mask_ratio[0], str):
                 start = MASK_RATIO_INDEX[mask_ratio[0]]
                 end = MASK_RATIO_INDEX[mask_ratio[1]]
-            mask_paths = mask_paths[start:end]
+            if not self.image_mask_paired:
+                mask_paths = mask_paths[start:end]
             self.masks = ImagePaths(paths=mask_paths)
+            self.math_paths = mask_paths
             my_print('Number of masks: {}, start: {}, end: {}'.format(end-start, start, end))
             if len(self.masks) == 0:
                 self.masks = None
@@ -175,14 +177,14 @@ class ImageListDataset(Dataset):
         #     self.stroken_mask_params['keep_ratio'] = self.erase_image_with_mask_ratio
         #     mask = generate_stroke_mask(**stroken_mask_params)
         #     return mask
-
         if self.masks is not None and random.random() < self.use_provided_mask:
             if self.image_mask_paired:  # False
                 assert len(self.masks) == len(self.data), 'If image and mask are paired with each other, the number of them should be the same!'
             else:
                 index = random.randint(0, len(self.masks)-1)
             mask = self.masks[index]['image']
-            mask = cv2.resize(mask, im_size[::-1], interpolation=cv2.INTER_NEAREST) # size [w, h]
+            if mask.shape[-1] != im_size[::-1]:
+                mask = cv2.resize(mask, im_size[::-1], interpolation=cv2.INTER_NEAREST) # size [w, h]
             mask = 1 - mask / 255.0
             mask = mask[:, :, 0:1]
             # import pdb; pdb.set_trace()

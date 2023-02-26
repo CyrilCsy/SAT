@@ -542,11 +542,11 @@ def inference_complet_sample_in_feature_for_evaluation(local_rank=0, args=None):
         model = model.cuda()
     
     count_cond = -1
-    filter_ratio = [50] 
+    filter_ratio = ['150']
 
     filter_type = 'count'
 
-    sample_largest = True
+    sample_largest = False
     save_gt = True
     save_mask = True
     save_masked_gt = True 
@@ -570,9 +570,9 @@ def inference_complet_sample_in_feature_for_evaluation(local_rank=0, args=None):
             raise NotImplementedError
 
         mask_ratio = [
-            ['0.4','0.6'],
-            ['0.2','0.4'],
-            ['0.1', '0.6'],
+            # ['0.1', '0.6'],
+            # ['0.2','0.4'],
+            ['0.4', '0.6'],
         ]
         
         for mr in mask_ratio:

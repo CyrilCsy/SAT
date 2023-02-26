@@ -12,6 +12,6 @@ elif  [ ${#device} -eq 6 ]; then # the given is such as cuda:0, do nothing
 fi
 echo "device: ${device}"
 
-python scripts/metrics/cal_psnr.py --gt_dir ${gt_dir} --result_dir ${result_dir}
-python scripts/metrics/cal_fid.py --path1 ${gt_dir} --path2 ${result_dir} --device ${device} --net inception
-python scripts/metrics/cal_lpips.py --type perceptron --path1 ${gt_dir} --path2 ${result_dir} --device ${device}
+python cal_psnr.py --gt_dir ${gt_dir} --result_dir ${result_dir}
+python cal_fid.py --path1 ${gt_dir} --path2 ${result_dir} --device ${device} --net inception
+python cal_lpips.py --type perceptron --path1 ${gt_dir} --path2 ${result_dir} --device ${device}

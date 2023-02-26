@@ -321,9 +321,11 @@ def distributed_sinkhorn(out, epsilon=0.05, iterations=3):
 
 
 def get_gaussian_weight(size):
-    u = (size - 1) / 2
-    sigma = u / 2
-    x = torch.arange(start=0, end=size)
+    # u = (size - 1) / 2
+    # sigma = u / 2
+    u = 0
+    sigma = 1
+    x = torch.arange(start=0, end=size) - size // 2
     gw = 1 / (math.sqrt(2 * math.pi) * sigma) * torch.exp(- ((x - u) ** 2) / (2 * sigma ** 2))
     gw = (1 / torch.sum(gw)) * gw
     return gw

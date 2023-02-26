@@ -131,3 +131,5 @@ dmypy.json
 /OUTPUT/
 
 /configs/
+
+/RESULT/

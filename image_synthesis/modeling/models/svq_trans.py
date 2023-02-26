@@ -918,10 +918,15 @@ class SemanticAwareTransformer(nn.Module):
 
         b, c, h, w = x.shape
         tgt = x.reshape(b, c, h * w).permute(2, 0, 1).contiguous()
-        if sample_type == 'all':
+        print('sample_type:', sample_type)
+        if sample_type == 'gibb':
+            mask_ = F.interpolate(mask.to(img), size=(h, w), mode='nearest')
+            token_type = get_token_type(mask_, type='pixel_shuffle', token_shape=[h, w])
+            content_feat = x.reshape(b, c, h * w).permute(0, 2, 1).contiguous()
+        elif sample_type == 'all':
             mem = self.codebook['default']['code'].unsqueeze(dim=1).repeat(1, b, 1).to(tgt.device)
         elif sample_type == 'prob':
-            prob = self.content_codec.get_selector(tgt)
+            prob = self.content_codec.get_selector(x.permute(0, 2, 3, 1).contiguous().view(-1, c))
             mem_token = torch.multinomial(prob, 1).view(b, -1)
             mem = self.content_codec.get_codebook_entry_with_token(mem_token)['feature']
             mem = mem.permute(1, 0, 2).contiguous()
