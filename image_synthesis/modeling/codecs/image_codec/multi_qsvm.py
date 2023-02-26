@@ -318,9 +318,7 @@ class VectorQuantizer(nn.Module):
             # import pdb; pdb.set_trace()
         elif self.distance_type == 'cosine':
             d = torch.einsum('ld,nd->ln', z, self.embed_weight)  # BHW x N
-            norm = torch.sqrt(
-                torch.sum(z ** 2, dim=1).unsqueeze(dim=1) * torch.sum(self.embed_weight ** 2, dim=1).unsqueeze(dim=0))
-            d = 0 - (0.5 + 0.5 * d / norm)
+            d = 0 - (0.5 + 0.5 * d)
         else:
             raise NotImplementedError('distance not implemented for {}'.format(self.distance_type))
 
@@ -351,29 +349,7 @@ class VectorQuantizer(nn.Module):
             min_encoding_indices = self.get_index(d, topk=topk, step=step, total_steps=total_steps)
         else:
             min_encoding_indices = torch.zeros(z.shape[0]).long().to(z.device)
-
             self.update_semantic_label()
-
-            # method 1
-            # d_from_center = torch.log(torch.sigmoid(-d_from_center) + 1) + torch.log(get_gaussian_weight(self.n_cluster).to(z.device) + 1)
-            # method 2
-            # d_from_center = -d_from_center + get_gaussian_weight(self.n_cluster).to(z.device)
-            # method 3
-
-            # self.alpha.data = torch.clamp(self.alpha, 0, 1)
-            # sem_cls = self.semantic_classifier(self.embedding[:self.n_cluster])
-            # sem_cls = sem_cls / torch.norm(sem_cls, p=2, dim=-1, keepdim=True)
-            # b = int(z.shape[0] / sem_cls.shape[-1])
-            # sem_cls = sem_cls.unsqueeze(-1).repeat(1, 1, b).permute(2, 1, 0).contiguous().view(-1, self.n_cluster)
-            # d_from_center = self.alpha * sem_cls - (1 - self.alpha) * d_from_center.detach()  # L x k
-            # method 1
-            # token_semantic_type = torch.argmax(d_from_center, dim=1)
-            # method 2
-            # token_semantic_type = self.get_index(d_from_center, topk=1, step=step, total_steps=total_steps, gumbel_sample=True)
-            # method 3
-            # token_semantic_type = F.gumbel_softmax(d_from_center, hard=True)
-            # method 4
-            # likelihood = F.gumbel_softmax(d_from_center, dim=0, tau=0.5, hard=False)    # P(z|k)
 
             embed_semantic_label = F.one_hot(self.semantic_label).to(torch.float32)   #
             d_from_cluster = (d @ embed_semantic_label) / torch.sum(embed_semantic_label, dim=0)
@@ -392,14 +368,6 @@ class VectorQuantizer(nn.Module):
             dis_p = torch.softmax(dis_p/0.5, dim=0)
             cls_loss = calculate_kl_loss(token_semantic_type, dis_p)
             orth_loss = self.orth_loss()
-
-            # for i in range(self.n_cluster):
-            #     idx1 = token_semantic_type == i
-            #     idx2 = self.semantic_label == i
-            #     if idx1.sum() > 0:
-            #         d_ = d[idx1][:, idx2]
-            #         indices_ = self.get_index(d_, topk=topk, step=step, total_steps=total_steps)
-            #         min_encoding_indices[idx1] = indices_
 
         if self.get_embed_type == 'matmul':
             min_encodings = torch.zeros(min_encoding_indices.shape[0], self.n_e).to(z)
