@@ -2,14 +2,7 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="1d2bafed-9c25-4646-be7e-5abcd85abdee" name="Changes" comment="sat">
-      <change beforePath="$PROJECT_DIR$/image_synthesis/data/image_list_dataset.py" beforeDir="false" afterPath="$PROJECT_DIR$/image_synthesis/data/image_list_dataset.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/image_synthesis/modeling/models/svq_trans.py" beforeDir="false" afterPath="$PROJECT_DIR$/image_synthesis/modeling/models/svq_trans.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/image_synthesis/modeling/utils/misc.py" beforeDir="false" afterPath="$PROJECT_DIR$/image_synthesis/modeling/utils/misc.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/inference.py" beforeDir="false" afterPath="$PROJECT_DIR$/inference.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/scripts/metrics/cal_fid.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/scripts/metrics/cal_lpips.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/scripts/metrics/cal_metrics.sh" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/scripts/metrics/cal_psnr.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -43,6 +36,8 @@
   <component name="HighlightingSettingsPerFile">
     <setting file="file://$PROJECT_DIR$/image_synthesis/data/image_list_dataset.py" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/image_synthesis/modeling/models/svq_trans.py" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/../PUT/image_synthesis/modeling/codecs/image_codec/svq_gan.py" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/configs/put_cvpr2022/ffhq/pvqvae_ffhq.yaml" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/image_synthesis/data/base_dataset.py" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/configs/put_cvpr2022/psv/svqvae_psv.yaml" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/image_synthesis/modeling/utils/misc.py" root0="FORCE_HIGHLIGHTING" />
@@ -51,9 +46,12 @@
     <setting file="file://$PROJECT_DIR$/train_net.py" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$USER_HOME$/anaconda3/envs/put/lib/python3.7/site-packages/torch/nn/functional.py" root0="SKIP_INSPECTION" />
     <setting file="file://$PROJECT_DIR$/image_synthesis/modeling/codecs/version/ver_6.py" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/configs/put_cvpr2022/celeba/svqvae_celeba.yaml" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/image_synthesis/modeling/models/masked_image_inpainting_transformer_in_feature.py" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/configs/put_cvpr2022/psv/transformer_psv.yaml" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/../PUT/image_synthesis/modeling/codecs/image_codec/patch_vqgan.py" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/image_synthesis/modeling/codecs/image_codec/multi_qsvm.py" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/image_synthesis/modeling/models/sat_trans.py" root0="FORCE_HIGHLIGHTING" />
   </component>
   <component name="MarkdownSettingsMigration">
     <option name="stateVersion" value="1" />
@@ -65,7 +63,7 @@
     <option name="showLibraryContents" value="true" />
   </component>
   <component name="PropertiesComponent">
-    <property name="last_opened_file_path" value="$PROJECT_DIR$/../Demo" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/../ICT" />
     <property name="settings.editor.selected.configurable" value="com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable" />
   </component>
   <component name="RecentsManager">
@@ -113,34 +111,6 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1662636912345</updated>
-    </task>
-    <task id="LOCAL-00026" summary="test">
-      <created>1665734128794</created>
-      <option name="number" value="00026" />
-      <option name="presentableId" value="LOCAL-00026" />
-      <option name="project" value="LOCAL" />
-      <updated>1665734128794</updated>
-    </task>
-    <task id="LOCAL-00027" summary="test">
-      <created>1665745738975</created>
-      <option name="number" value="00027" />
-      <option name="presentableId" value="LOCAL-00027" />
-      <option name="project" value="LOCAL" />
-      <updated>1665745738975</updated>
-    </task>
-    <task id="LOCAL-00028" summary="test">
-      <created>1665746225775</created>
-      <option name="number" value="00028" />
-      <option name="presentableId" value="LOCAL-00028" />
-      <option name="project" value="LOCAL" />
-      <updated>1665746225775</updated>
-    </task>
-    <task id="LOCAL-00029" summary="test">
-      <created>1665749418532</created>
-      <option name="number" value="00029" />
-      <option name="presentableId" value="LOCAL-00029" />
-      <option name="project" value="LOCAL" />
-      <updated>1665749418532</updated>
     </task>
     <task id="LOCAL-00030" summary="test">
       <created>1665752211780</created>
@@ -457,7 +427,35 @@
       <option name="project" value="LOCAL" />
       <updated>1666464180735</updated>
     </task>
-    <option name="localTasksCounter" value="75" />
+    <task id="LOCAL-00075" summary="sat">
+      <created>1677390237380</created>
+      <option name="number" value="00075" />
+      <option name="presentableId" value="LOCAL-00075" />
+      <option name="project" value="LOCAL" />
+      <updated>1677390237380</updated>
+    </task>
+    <task id="LOCAL-00076" summary="sat">
+      <created>1677423399877</created>
+      <option name="number" value="00076" />
+      <option name="presentableId" value="LOCAL-00076" />
+      <option name="project" value="LOCAL" />
+      <updated>1677423399877</updated>
+    </task>
+    <task id="LOCAL-00077" summary="sat">
+      <created>1677468370527</created>
+      <option name="number" value="00077" />
+      <option name="presentableId" value="LOCAL-00077" />
+      <option name="project" value="LOCAL" />
+      <updated>1677468370527</updated>
+    </task>
+    <task id="LOCAL-00078" summary="sat">
+      <created>1677484629716</created>
+      <option name="number" value="00078" />
+      <option name="presentableId" value="LOCAL-00078" />
+      <option name="project" value="LOCAL" />
+      <updated>1677484629716</updated>
+    </task>
+    <option name="localTasksCounter" value="79" />
     <servers />
   </component>
   <component name="Vcs.Log.History.Properties">
