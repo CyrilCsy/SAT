@@ -494,7 +494,10 @@ class UpSample(nn.Module):
         self.activate_after = activate_after
         self.upsample_type = upsample_type
         if self.upsample_type == 'deconv':
-            self.deconv = nn.ConvTranspose2d(in_channels, out_channels, kernel_size=4, stride=2, padding=1)
+            self.deconv = nn.Sequential(*[
+                nn.ConvTranspose2d(in_channels, out_channels, kernel_size=4, stride=2, padding=1),
+                nn.InstanceNorm2d(out_channels)
+            ])
         else:
             assert self.upsample_type in ['bilinear', 'nearest'], 'upsample {} not implemented!'.format(
                 self.upsample_type)
@@ -537,9 +540,15 @@ class DownSample(nn.Module):
         if self.downsample_type == 'conv':
             if self.partial_conv:
                 raise NotImplementedError
-                self.conv = PartialConv2d(in_channels, out_channels, kernel_size=4, stride=2, padding=1)
+                self.conv = nn.Sequential(*[
+                    PartialConv2d(in_channels, out_channels, kernel_size=4, stride=2, padding=1),
+                    nn.InstanceNorm2d(out_channels),
+                ])
             else:
-                self.conv = nn.Conv2d(in_channels, out_channels, kernel_size=4, stride=2, padding=1)
+                self.conv = nn.Sequential(*[
+                    nn.Conv2d(in_channels, out_channels, kernel_size=4, stride=2, padding=1),
+                    nn.InstanceNorm2d(out_channels),
+                ])
         else:
             assert self.downsample_type in ['bilinear', 'nearest', 'maxpool',
                                             'avgpool'], 'upsample {} not implemented!'.format(self.downsample_type)
@@ -731,7 +740,10 @@ class VQConvEncoder2(nn.Module):
                 pre_layers.append(
                     DownSample(in_ch_, out_ch_, activate_before='none', activate_after='relu', downsample_type='conv'))
             elif downsample_layer == 'conv':
-                pre_layers.append(nn.Conv2d(in_ch_, out_ch_, kernel_size=4, stride=2, padding=1))
+                pre_layers.append(nn.Sequential(*[
+                    nn.Conv2d(in_ch_, out_ch_, kernel_size=4, stride=2, padding=1),
+                    nn.InstanceNorm2d(out_ch_)
+                ]))
                 if stride != 1:
                     pre_layers.append(nn.ReLU(inplace=True))
             else:
@@ -751,6 +763,7 @@ class VQConvEncoder2(nn.Module):
         post_layers = [
             nn.ReLU(inplace=True),
             nn.Conv2d(res_ch, out_ch, kernel_size=3, stride=1, padding=1),
+            nn.InstanceNorm2d(out_ch),
             nn.ReLU(inplace=True),
         ]
         self.post_layers = nn.Sequential(*post_layers)
@@ -870,7 +883,8 @@ class VQConvDecoder2(nn.Module):
             self.mask_smooth_kernel = self.mask_smooth_kernel / self.mask_smooth_kernel.numel()
 
         self.pre_layers = nn.Sequential(*[
-            torch.nn.Conv2d(in_ch, res_ch, kernel_size=3, stride=1, padding=1),
+            nn.Conv2d(in_ch, res_ch, kernel_size=3, stride=1, padding=1),
+            nn.InstanceNorm2d(res_ch),
         ])
 
         # res resblocks
@@ -956,6 +970,7 @@ class VQConvDecoder2(nn.Module):
         else:
             x = self.up_layers(x)
             x = self.post_layers(x)
+        # x = (torch.tanh(x) + 1) / 2
         return x
 
 
